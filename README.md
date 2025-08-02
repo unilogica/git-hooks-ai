@@ -38,8 +38,8 @@ A configuração é feita dentro do seu repositório Git local.
 Se você quiser ter os scripts como parte de um projeto, pode clonar este repositório. Caso contrário, apenas copie o conteúdo do script desejado. Para este guia, vamos supor que você clonou o repositório.
 
 ```bash
-git clone https://github.com/SEU_USUARIO/SEU_REPO.git
-cd SEU_REPO
+git clone git@github.com:unilogica/git-hooks-ai.git
+cd git-hooks-ai
 ```
 
 ### 2\. Escolha e Configure o Hook
@@ -54,7 +54,7 @@ Você precisa criar um link simbólico de um deles para o diretório de hooks do
 **Para usar OpenAI:**
 
 ```bash
-ln -s ../../openai/prepare-commit-msg .git/hooks/prepare-commit-msg
+ln -s ../../git-hooks-ai/openai/prepare-commit-msg .git/hooks/prepare-commit-msg
 ```
 
 **OU**
@@ -62,7 +62,7 @@ ln -s ../../openai/prepare-commit-msg .git/hooks/prepare-commit-msg
 **Para usar Google Gemini:**
 
 ```bash
-ln -s ../../gemini/prepare-commit-msg .git/hooks/prepare-commit-msg
+ln -s ../../git-hooks-ai/gemini/prepare-commit-msg .git/hooks/prepare-commit-msg
 ```
 
 *Este método com link simbólico é ótimo porque qualquer atualização que você fizer no script (via `git pull`) será refletida automaticamente no hook. Porém se preferir simplesmente copiar / colar fique a vontade.*
