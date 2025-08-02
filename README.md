@@ -1,9 +1,3 @@
-Claro\! Um bom `README.md` é essencial para qualquer projeto.
-
-Aqui está uma proposta de `README.md` completa e bem estruturada para um repositório no GitHub que ensina como configurar e usar os scripts que criamos. O texto está em português e formatado em Markdown.
-
------
-
 # Mensagens de Commit Automáticas com IA
 
 [](https://opensource.org/licenses/MIT)
