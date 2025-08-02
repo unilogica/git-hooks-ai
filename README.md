@@ -1,5 +1,7 @@
 # Mensagens de Commit Automáticas com IA
 
+![Ilustração do mascote do AI Commit Hooks](https://raw.githubusercontent.com/unilogica/git-hooks-ai/refs/heads/main/git-hook-ai-cover.png)
+
 [](https://opensource.org/licenses/MIT)
 
 Cansado de escrever mensagens de commit? Este projeto utiliza um simples hook do Git para gerar mensagens de commit claras, concisas e padronizadas usando o poder das APIs da **OpenAI** ou do **Google Gemini**.
