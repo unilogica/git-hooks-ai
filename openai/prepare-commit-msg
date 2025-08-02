@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+set -e
+
+# --- 1. Verificações do Git ---
+COMMIT_MSG_FILE=$1
+
+# Não executa se o editor não for interativo (ex: durante um rebase)
+if [ "$GIT_EDITOR" = ":" ]; then
+  exit 0
+fi
+
+# --- 2. Lógica Inteligente para 'git commit -v' ---
+# Isola o conteúdo editável (acima da linha de corte do diff)
+EDITABLE_CONTENT=$(sed '/^# ------------------------ >8 ------------------------/q' "$COMMIT_MSG_FILE")
+
+# Sai se a área editável já contiver texto real (não comentários ou linhas em branco)
+if [ -n "$(echo "$EDITABLE_CONTENT" | grep -vE '^\s*#|^$')" ]; then
+    exit 0
+fi
+
+# --- 3. Verificações de Dependência e Chave de API ---
+if ! command -v jq &> /dev/null; then
+    echo "ERRO: A dependência 'jq' não foi encontrada. Por favor, instale-a." >&2
+    exit 1
+fi
+
+# Verifica a chave da OpenAI
+if [ -z "$OPENAI_API_KEY" ]; then
+    echo "AVISO: A variável de ambiente OPENAI_API_KEY não está definida." >&2
+    exit 0
+fi
+
+# --- 4. Coleta das Alterações ---
+DIFF=$(git diff --staged)
+if [ -z "$DIFF" ]; then
+    exit 0 # Nenhuma alteração no stage, sai silenciosamente.
+fi
+
+# --- 5. Chamada para a API da OpenAI ---
+echo "🤖 Gerando mensagem de commit com a OpenAI... (aguarde)"
+
+# Define os prompts para a API da OpenAI
+SYSTEM_PROMPT="Você é um assistente especialista que escreve mensagens de commit claras e concisas seguindo o padrão Conventional Commits."
+USER_PROMPT="Com base no 'git diff' a seguir, gere uma mensagem de commit informativa:\n\n$DIFF"
+
+# Cria o corpo do JSON de forma segura usando jq
+JSON_PAYLOAD=$(jq -n \
+                  --arg model "gpt-4o-mini" \
+                  --arg sp "$SYSTEM_PROMPT" \
+                  --arg up "$USER_PROMPT" \
+                  '{
+                    "model": $model,
+                    "messages": [
+                      {"role": "system", "content": $sp},
+                      {"role": "user", "content": $up}
+                    ],
+                    "temperature": 0.3,
+                    "max_tokens": 100
+                  }')
+
+# Executa a chamada para a API da OpenAI
+API_RESPONSE=$(curl --silent --request POST \
+    "https://api.openai.com/v1/chat/completions" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $OPENAI_API_KEY" \
+    -d "$JSON_PAYLOAD")
+
+# --- 6. Processamento da Resposta ---
+# Extrai a mensagem da resposta usando o caminho específico da OpenAI
+GENERATED_MSG=$(echo "$API_RESPONSE" | jq -e -r '.choices[0].message.content')
+
+if [ -n "$GENERATED_MSG" ]; then
+    # Insere a mensagem gerada NO TOPO do arquivo de commit, preservando o diff
+    (echo "$GENERATED_MSG"; echo; cat "$COMMIT_MSG_FILE") > "$COMMIT_MSG_FILE.tmp" && mv "$COMMIT_MSG_FILE.tmp" "$COMMIT_MSG_FILE"
+else
+    echo "ERRO: Falha ao gerar a mensagem da OpenAI. A API pode ter retornado um erro." >&2
+    # Para depurar, você pode descomentar a linha abaixo para salvar a resposta de erro
+    # echo "$API_RESPONSE" > .git/openai_error.log
+fi
+
+exit 0
