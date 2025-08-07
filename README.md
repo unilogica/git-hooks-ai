@@ -1,6 +1,6 @@
-# Mensagens de Commit Automáticas com IA
-
 ![Ilustração do mascote do AI Commit Hooks](https://raw.githubusercontent.com/unilogica/git-hooks-ai/refs/heads/main/git-hook-ai-cover.png)
+
+# Mensagens de Commit Automáticas com IA
 
 [](https://opensource.org/licenses/MIT)
 
